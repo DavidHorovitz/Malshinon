@@ -8,8 +8,15 @@ namespace Malshinon
 {
     internal class Program
     {
+
         static void Main(string[] args)
         {
+            //DAL dAL = new DAL();
+            //Console.WriteLine(dAL.GetNum_reports());
+            //Console.WriteLine(dAL.GetNum_mentions());
+            Maneger maneger = new Maneger();
+            maneger.starter();
+
         }
     }
 }
