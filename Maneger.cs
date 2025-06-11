@@ -73,18 +73,18 @@ namespace Malshinon
             }
             else if (reporter)
             {
-                dAL.InsertPeople(get_FirstNameOfTarget, getLastNameOfTarget());
+                dAL.InsertPeople(get_FirstNameOfTarget, getLastNameOfTarget(),"target");
                 dAL.insertReports(get_FirstNameOfReporter, get_FirstNameOfTarget, getInformation());
             }
             else if (target)
             {
-                dAL.InsertPeople(get_FirstNameOfReporter, getLastNameOfReporter());
+                dAL.InsertPeople(get_FirstNameOfReporter, getLastNameOfReporter(),"reporter");
                 dAL.insertReports(get_FirstNameOfReporter, get_FirstNameOfTarget, getInformation());
             }
             else
             {
-                dAL.InsertPeople(get_FirstNameOfReporter, getLastNameOfReporter());
-                dAL.InsertPeople(get_FirstNameOfTarget, getLastNameOfTarget());
+                dAL.InsertPeople(get_FirstNameOfReporter, getLastNameOfReporter(), "reporter");
+                dAL.InsertPeople(get_FirstNameOfTarget, getLastNameOfTarget(),"target");
                 dAL.insertReports(get_FirstNameOfReporter, get_FirstNameOfTarget, getInformation());
             }
         }

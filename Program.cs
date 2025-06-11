@@ -11,11 +11,15 @@ namespace Malshinon
 
         static void Main(string[] args)
         {
-            //DAL dAL = new DAL();
+            DAL dAL = new DAL();
             //Console.WriteLine(dAL.GetNum_reports());
             //Console.WriteLine(dAL.GetNum_mentions());
-            Maneger maneger = new Maneger();
-            maneger.starter();
+
+
+            //Maneger maneger = new Maneger();
+            //maneger.starter();
+            //Console.WriteLine(dAL.GetType("ff"));
+            dAL.GetNum_reports("ely");
 
         }
     }

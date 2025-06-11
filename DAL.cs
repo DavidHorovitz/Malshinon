@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.X509;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Malshinon
 {
@@ -58,7 +60,7 @@ namespace Malshinon
             }
 
         }
-        public void InsertPeople(string firstName, string lastName)
+        public void InsertPeople(string firstName, string lastName,string type)
         {
             //People people = new People(firstName, lastName);
 
@@ -74,7 +76,7 @@ namespace Malshinon
                     cmd.Parameters.AddWithValue("@FirstName", firstName);
                     cmd.Parameters.AddWithValue("@LastName", lastName);
                     cmd.Parameters.AddWithValue("@SecretCode", GetCecret_code());
-                    cmd.Parameters.AddWithValue("@Type", UpdateType(firstName));
+                    cmd.Parameters.AddWithValue("@Type", type);
                     
                     cmd.ExecuteNonQuery();
                 }
@@ -115,12 +117,48 @@ namespace Malshinon
             }
             return ran;
         }
-        public string UpdateType(string first_Name)
+        public string UpdateType(string malshin ,string target)
         {
-            
-            string type = "reporter";
-            return type;
+            string type= GetType(first_Nane);
+            if (type=="reporter")
 
+
+
+
+            return "";
+
+        }
+        public int GetAverege(string first_Name)
+        {
+            int averege = 0;
+            try
+            {
+                openConnection();
+                string query = $"SELECT AVG( LENGTH (`text`))averege  FROM `intelreports` WHERE `reporter_id`= @first_Name";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
+
+
+                    cmd.Parameters.AddWithValue("@firstName", GetPersonId(first_Name));
+                    cmd.ExecuteNonQuery();
+
+                    var reader = cmd.ExecuteScalar();
+                    averege = Convert.ToInt32(reader);
+                    return averege;
+
+                }
+
+            }
+
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
+            return averege;
         }
         public int GetNum_reports(string first_Name)
         {
@@ -212,6 +250,7 @@ namespace Malshinon
                     cmd.ExecuteNonQuery();
                     UpdateNumReports(malshin);
                     UpdateNumTargets(target);
+                    UpdateType(malshin,target);
                 }
 
                 //reader = cmd.ExecuteReader();
@@ -225,6 +264,40 @@ namespace Malshinon
             {
                 Console.WriteLine($"General Error: {ex.Message}");
             }
+        }
+        public string GetType(string first_Name)
+        {
+            try
+            {
+                openConnection();
+                
+
+                string quary = $"SELECT `type` FROM `people` WHERE `first_name`=@first_name ";
+
+                using (var cmd = new MySqlCommand(quary, _conn))
+                {
+                    cmd.Parameters.AddWithValue("@first_name", first_Name);
+                    using (var reader = cmd.ExecuteReader()) 
+                    {
+
+                        if (!reader.Read())
+                        {
+                            Console.WriteLine("No found");
+                        }
+                        string typey = reader.GetString("Type");
+                        return typey;
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
+            return "";
         }
         public void UpdateNumReports(string firstName)
         {
@@ -257,6 +330,49 @@ namespace Malshinon
                 using (var cmd = new MySqlCommand(query, _conn))
                 {
                     cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
+        }
+
+        public void UpdateToPotentialAgent(string first_Name)
+        {
+            try
+            {
+                openConnection();
+                string query = $"UPDATE people SET `type` = 'potential_agent'";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
+        }
+        public void UpdateToBoth(string first_Name)
+        {
+            try
+            {
+                openConnection();
+                string query = $"UPDATE people SET `type` = 'both'";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
                     cmd.ExecuteNonQuery();
                 }
             }
