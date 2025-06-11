@@ -22,37 +22,35 @@ namespace Malshinon
         public int num_reports;
         public int num_mentions;
 
+        //Maneger maneger = new Maneger();
 
-
-        public People(string _First_Name, string _Last_Name)
-        {
-            first_name = _First_Name;
-            last_name = _Last_Name;
-        }
+        //public People()
+        //{
+        //    first_name = maneger.getFirstNameOfReporter();
+        //    last_name = maneger.getLastNameOfReporter();
+        //}
         DAL dAL = new DAL();
 
-        public bool checkMalshin(string nameOfMalshim, string nameOfTarget)
+        public bool checkMalshin(string firstNameMalshin)
         {
             foreach (var name in dAL.getAllNames())
             {
-                if ( name== nameOfMalshim)
+                if ( name== firstNameMalshin)
                 {
                     return true;
                 }
             }
-            dAL.InsertPeople(nameOfMalshim, nameOfTarget);
             return false;
         }
-        public bool checkTarget(string nameOfMalshim, string nameOfTarget)
+        public bool checkTarget(string firsrNameOfTarget)
         {
             foreach (var name in dAL.getAllNames())
             {
-                if (name == nameOfTarget)
+                if (name == firsrNameOfTarget)
                 {
                     return true ;
                 }
             }
-            dAL.InsertPeople(nameOfMalshim, nameOfTarget);
             return false;
         }
 

@@ -14,8 +14,7 @@ namespace Malshinon
         private MySqlConnection _conn;
         private MySqlCommand cmd = null;
         private MySqlDataReader reader = null;
-        public People People;
-        public Intelreports intelreports;
+        
         
 
         public MySqlConnection openConnection()
@@ -34,7 +33,6 @@ namespace Malshinon
 
             return _conn;
         }
-
         public void closeConnection()
         {
             if (_conn != null && _conn.State == System.Data.ConnectionState.Open)
@@ -43,7 +41,6 @@ namespace Malshinon
                 _conn = null;
             }
         }
-
         public DAL()
         {
             try
@@ -68,22 +65,27 @@ namespace Malshinon
             try
             {
                 openConnection();
-                string query = "INSERT INTO People (first_name, last_name, secret_code, type, num_reports, num_mentions) " +
-                               "VALUES (@FirstName, @LastName, @SecretCode, @Type, 0, 0)";
-                MySqlCommand cmd = new MySqlCommand(query, _conn);
+                string query = "INSERT INTO People (first_name, last_name, secret_code, type) " +
+                               "VALUES (@FirstName, @LastName, @SecretCode, @Type)";
+                using (var cmd = new MySqlCommand(query, _conn))
 
-                cmd.Parameters.AddWithValue("@FirstName", firstName);
-                cmd.Parameters.AddWithValue("@LastName", lastName);
-                cmd.Parameters.AddWithValue("@SecretCode",GetCecret_code());
-                cmd.Parameters.AddWithValue("@Type", GetType());
+                {
 
-                cmd.ExecuteNonQuery();
-                insertReports("malshin", "target","aaaaaaaa");
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.Parameters.AddWithValue("@LastName", lastName);
+                    cmd.Parameters.AddWithValue("@SecretCode", GetCecret_code());
+                    cmd.Parameters.AddWithValue("@Type", UpdateType(firstName));
+                    
+                    cmd.ExecuteNonQuery();
+                }
+
+                //insertReports(firstName, "target","aaaaaaaa");
 
             }
             catch (MySqlException ex) when (ex.Number == 1062)
             {
                 Console.WriteLine($"Duplicate entry: {firstName} {lastName} already exists.");
+
             }
             catch (MySqlException ex)
             {
@@ -98,40 +100,51 @@ namespace Malshinon
                 closeConnection();
             }
         }
-       
-            
-
-        
         public string GetCecret_code()
         {
 
             Random rnd = new Random();
             
-            String str = "abcdefghijklmnopqrstuvwxyz";
-            int size = 35;
+            String str = "abcdefghijklmnopqrstuvwxyz1234567890)(*&^%$#@!";
+            int size = 12;
             String ran = "";
             for (int i = 0; i < size; i++)
             {
-                int x = rnd.Next(35);
+                int x = rnd.Next(str.Length);
                 ran = ran + str[x];
             }
             return ran;
         }
-        public string getType()
+        public string UpdateType(string first_Name)
         {
-            string Type = "repoter";
-            return Type;
+            
+            string type = "reporter";
+            return type;
 
         }
-        public int GetNum_reports()
+        public int GetNum_reports(string first_Name)
         {
-
-            return People.num_reports;
+            int number;
+            string query = $"SELECT COUNT(*) FROM `intelreports` WHERE `reporter_id`={GetPersonId(first_Name)}";
+            using (var cmd = new MySqlCommand(query, _conn))
+            {
+                var reader = cmd.ExecuteScalar();
+                number = Convert.ToInt32(reader);
+                return number;
+            }
         }
-        public int GetNum_mentions()
+        public int GetNum_mentions(string first_Name)
         {
-            return People.num_mentions;
+            int number;
+            string query = $"SELECT COUNT(*) FROM `intelreports` WHERE `target_id`={first_Name}";
+            using (var cmd = new MySqlCommand(query, _conn))
+            {
+                var reader = cmd.ExecuteScalar();
+                number = Convert.ToInt32(reader);
+                return number;
+            }
         }
+        
         public List<string> getAllNames()
         {
             List<string> names = new List<string>(); 
@@ -151,7 +164,7 @@ namespace Malshinon
         }
         public int GetPersonId(string firstName)
         {
-            int idPearson = -1;
+            int idPearson;
 
             string query = "SELECT id FROM people WHERE first_name = @FirstName ";
             using (var cmd = new MySqlCommand(query, _conn))
@@ -159,13 +172,13 @@ namespace Malshinon
                 cmd.Parameters.AddWithValue("@FirstName", firstName);
                 openConnection();
                 var reader = cmd.ExecuteScalar();
+                idPearson = Convert.ToInt32(reader);
+                
                 
             }
 
             return idPearson;
         }
-
-
         //public string getName()
         //{
         //    string query = "SELECT `first_name` FROM `people`";
@@ -179,26 +192,31 @@ namespace Malshinon
 
             try
             {
+                openConnection();
                 int reporterId = GetPersonId(malshin);
                 int targetId = GetPersonId(target);
 
-                string quary = $"INSERT INTO`intelreports` (`reporter_id`,`target_id`,`text`,`timestamp`)" +
-                       "VALUES (@reporter_id, @target_id, @text, @timestamp)";
-                cmd = new MySqlCommand(quary, _conn);
+                string quary = $"INSERT INTO`intelreports` (`reporter_id`,`target_id`,`text`)" +
+                       "VALUES (@reporter_id, @target_id, @text)";
+
+                using (var cmd = new MySqlCommand(quary, _conn)) 
+
                 //MySqlCommand cmd = new MySqlCommand(query, _conn);
+                {
+                   
+                    cmd.Parameters.AddWithValue("@reporter_id", reporterId);
+                    cmd.Parameters.AddWithValue("@target_id", targetId);
+                    cmd.Parameters.AddWithValue("@text", text);
+                    //cmd.Parameters.AddWithValue("@timestamp", getTime());
 
-                cmd.Parameters.AddWithValue("@reporter_id", reporterId);
-                cmd.Parameters.AddWithValue("@target_id",targetId);
-                cmd.Parameters.AddWithValue("@text", text);
-                cmd.Parameters.AddWithValue("@timestamp", getTime());
-
+                    cmd.ExecuteNonQuery();
+                    UpdateNumReports(malshin);
+                    UpdateNumTargets(target);
+                }
 
                 //reader = cmd.ExecuteReader();
             }
-            catch (MySqlException ex) when (ex.Number == 1062)
-            {
-                Console.WriteLine("");
-            }
+            
             catch (MySqlException ex)
             {
                 Console.WriteLine($"MySQL Error: {ex.Message}");
@@ -208,16 +226,50 @@ namespace Malshinon
                 Console.WriteLine($"General Error: {ex.Message}");
             }
         }
-        public string getTime()
+        public void UpdateNumReports(string firstName)
         {
-            DateTime currentTime = DateTime.Now;
-            string timey = currentTime.ToString();
-            return timey;
+            try
+            {
+                openConnection();
+                string query = $"UPDATE people SET num_reports = num_reports + 1 WHERE first_name = @FirstName";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
         }
+        public void UpdateNumTargets(string firstName)
+        {
+            try
+            {
+                openConnection();
+                string query = $"UPDATE people SET num_mentions = num_mentions + 1 WHERE first_name = @FirstName";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.ExecuteNonQuery();
+                }
+            }
 
-
-
-
+            catch (MySqlException ex)
+            {
+                Console.WriteLine($"MySQL Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+            }
+        }
         //public int GetNum_reports()
         //{
         //    openConnection();
