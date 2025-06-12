@@ -18,8 +18,8 @@ namespace Malshinon
 
             //Maneger maneger = new Maneger();
             //maneger.starter();
-            //Console.WriteLine(dAL.GetType("ff"));
-            dAL.GetNum_reports("ely");
+            Console.WriteLine(dAL.GetAverege("hhghj"));
+            //Console.WriteLine(dAL.GetPersonId("hhghj")); 
 
         }
     }

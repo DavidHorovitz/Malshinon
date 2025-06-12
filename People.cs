@@ -31,28 +31,18 @@ namespace Malshinon
         //}
         DAL dAL = new DAL();
 
-        public bool checkMalshin(string firstNameMalshin)
+        public bool checkPersonIfExist(string firstName)
         {
             foreach (var name in dAL.getAllNames())
             {
-                if ( name== firstNameMalshin)
+                if ( name== firstName)
                 {
                     return true;
                 }
             }
             return false;
         }
-        public bool checkTarget(string firsrNameOfTarget)
-        {
-            foreach (var name in dAL.getAllNames())
-            {
-                if (name == firsrNameOfTarget)
-                {
-                    return true ;
-                }
-            }
-            return false;
-        }
+       
 
 
 

@@ -117,39 +117,44 @@ namespace Malshinon
             }
             return ran;
         }
-        public string UpdateType(string malshin ,string target)
+        public void UpdateType(string malshin ,string target)
         {
-            string type= GetType(first_Nane);
-            if (type=="reporter")
-
-
-
-
-            return "";
-
+            if (GetAverege(malshin) > 1 && GetNum_reports(malshin) > 1)
+            {
+                UpdateToPotentialAgent(malshin);
+            }
+            else if (GetType(target) == "reporter" && GetType(malshin) == "target")
+            {
+                UpdateToBoth(target);
+                UpdateToBoth(malshin);
+            }
+            else if (GetType(target) == "reporter")
+            {
+                UpdateToBoth(target);
+            }
+            else if (GetType(malshin) == "target")
+            {
+                UpdateToBoth(malshin);
+            }
         }
-        public int GetAverege(string first_Name)
+
+        
+        public decimal GetAverege(string first_Name)
         {
-            int averege = 0;
+            decimal averege=0;
             try
             {
                 openConnection();
                 string query = $"SELECT AVG( LENGTH (`text`))averege  FROM `intelreports` WHERE `reporter_id`= @first_Name";
                 using (var cmd = new MySqlCommand(query, _conn))
                 {
-
-
-                    cmd.Parameters.AddWithValue("@firstName", GetPersonId(first_Name));
+                    cmd.Parameters.AddWithValue("@first_Name", GetPersonId(first_Name));
                     cmd.ExecuteNonQuery();
 
                     var reader = cmd.ExecuteScalar();
-                    averege = Convert.ToInt32(reader);
-                    return averege;
-
+                    averege = Convert.ToDecimal(reader);
                 }
-
             }
-
             catch (MySqlException ex)
             {
                 Console.WriteLine($"MySQL Error: {ex.Message}");
@@ -162,14 +167,22 @@ namespace Malshinon
         }
         public int GetNum_reports(string first_Name)
         {
-            int number;
-            string query = $"SELECT COUNT(*) FROM `intelreports` WHERE `reporter_id`={GetPersonId(first_Name)}";
-            using (var cmd = new MySqlCommand(query, _conn))
+            int count = 0;
+            try
             {
-                var reader = cmd.ExecuteScalar();
-                number = Convert.ToInt32(reader);
-                return number;
+                openConnection();
+                string query = $"SELECT COUNT(`reporter_id`) FROM intelreports WHERE `reporter_id` = {GetPersonId(first_Name)}";
+                using (var cmd = new MySqlCommand(query, _conn))
+                {
+                    var result = cmd.ExecuteScalar();
+                    count = Convert.ToInt32(result);
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error reading report count: " + ex.GetType().Name + "-" + ex.Message);
+            }
+            return count;
         }
         public int GetNum_mentions(string first_Name)
         {
